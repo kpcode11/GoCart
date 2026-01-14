@@ -1,4 +1,3 @@
-import { Whisper } from "next/font/google";
 import { inngest } from "./client";
 import prisma from "@/lib/prisma";
 
