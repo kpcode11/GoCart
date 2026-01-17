@@ -16,6 +16,7 @@
     "@prisma/adapter-neon": "^6.0.0",
     "@prisma/client": "^6.0.0",
     "@reduxjs/toolkit": "^2.8.2",
+    "axios": "^1.7.9",
     "date-fns": "^4.1.0",
     "inngest": "^3.49.1",
     "lucide-react": "^0.525.0",
