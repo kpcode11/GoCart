@@ -1,6 +1,6 @@
 import imagekit from "@/configs/imageKit";
 import prisma from "@/lib/prisma";
-import { getAuth } from "@clerk/nextjs/dist/types/server";
+import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export async function POST(request) {
@@ -40,7 +40,7 @@ export async function POST(request) {
     }
 
     const isUsernameTaken = await prisma.store.findFirst({
-      where: { username: username.lowercase() },
+      where: { username: username.toLowerCase() },
     });
 
     if (isUsernameTaken) {
@@ -54,12 +54,12 @@ export async function POST(request) {
 
     const response = await imagekit.upload({
       file: buffer,
-      filename: image.name,
+      fileName: image.name,
       folder: "logos",
     });
 
     const optimizedImage = imagekit.url({
-      path: response.filepath,
+      path: response.filePath,
       transformation: [{ quality: "auto" }, { format: "webp" }, { width: 512 }],
     });
 
@@ -68,11 +68,11 @@ export async function POST(request) {
         userId,
         name,
         description,
-        username: username.lowercase(),
+        username: username.toLowerCase(),
         email,
         contact,
         address,
-        image: optimizedImage,
+        logo: optimizedImage,
       },
     });
 
@@ -86,7 +86,7 @@ export async function POST(request) {
 
     return NextResponse.json(
       { message: "applied, waiting for approval" },
-      { status: 400 }
+      { status: 201 }
     );
   } catch (error) {
     console.error(error);
