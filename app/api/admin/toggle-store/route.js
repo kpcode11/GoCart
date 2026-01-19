@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import authAdmin from "@/middlewares/authAdmin";
 import { getAuth } from "@clerk/nextjs/server";
-i;
 
 // toggle Store isActive
 export async function POST(request) {
@@ -17,7 +16,7 @@ export async function POST(request) {
     const { storeId } = await request.json();
 
     if (!storeId) {
-      return NextResponse.json({ error: "missing storeId" }, { status: 401 });
+      return NextResponse.json({ error: "missing storeId" }, { status: 400 });
     }
 
     const store = await prisma.store.findUnique({
@@ -25,7 +24,7 @@ export async function POST(request) {
     });
 
     if (!store) {
-      return NextResponse.json({ error: "store not found" }, { status: 401 });
+      return NextResponse.json({ error: "store not found" }, { status: 404 });
     }
 
     await prisma.store.update({
@@ -38,7 +37,7 @@ export async function POST(request) {
     console.error(error);
     return NextResponse.json(
       { error: error.code || error.message },
-      { status: 401 },
+      { status: 500 },
     );
   }
 }

@@ -6,15 +6,15 @@ import authAdmin from "@/middlewares/authAdmin";
 export async function GET(request) {
   try {
     const { userId } = getAuth(request);
-    const isAdmin = authAdmin(userId);
+    const isAdmin = await authAdmin(userId);
 
     if (!isAdmin) {
-      return NextResponse.json({ error: "not authorized" }, { status: 400 });
+      return NextResponse.json({ error: "not authorized" }, { status: 401 });
     }
 
-    //totol orders
+    // total orders
     const orders = await prisma.order.count();
-    //total stores
+    // total stores
     const stores = await prisma.store.count();
     const allOrders = await prisma.order.findMany({
       select: { createdAt: true, total: true },
@@ -27,7 +27,7 @@ export async function GET(request) {
 
     const revenue = totalRevenue.toFixed(2);
 
-    //total products
+    // total products
     const products = await prisma.product.count();
 
     const dashboardData = {
@@ -43,7 +43,7 @@ export async function GET(request) {
     console.error(error);
     return NextResponse.json(
       { error: error.code || error.message },
-      { status: 401 },
+      { status: 500 },
     );
   }
 }

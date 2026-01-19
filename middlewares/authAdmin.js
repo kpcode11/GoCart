@@ -11,7 +11,7 @@ const authAdmin = async (userId) => {
     const user = await client.users.getUser(userId);
 
     return process.env.ADMIN_EMAIL.split(",").includes(
-      user.emailAddresses[o].emailAddress,
+      user.emailAddresses[0].emailAddress,
     );
   } catch (error) {
     console.error(error);

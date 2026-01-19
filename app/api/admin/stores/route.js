@@ -3,7 +3,7 @@ import { getAuth } from "@clerk/nextjs/server";
 import authAdmin from "@/middlewares/authAdmin";
 import prisma from "@/lib/prisma";
 
-// GET request to get all the pending and rejected stores
+// GET request to get all the approved stores
 export async function GET(request) {
   try {
     const { userId } = getAuth(request);
@@ -14,7 +14,7 @@ export async function GET(request) {
     }
 
     const stores = await prisma.store.findMany({
-      where: { status: { in: "approved" } },
+      where: { status: "approved" },
       include: { user: true },
     });
 
@@ -23,7 +23,7 @@ export async function GET(request) {
     console.error(error);
     return NextResponse.json(
       { error: error.code || error.message },
-      { status: 401 },
+      { status: 500 },
     );
   }
 }
