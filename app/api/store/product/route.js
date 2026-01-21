@@ -6,6 +6,10 @@ import prisma from "@/lib/prisma";
 
 export async function POST(request) {
   try {
+
+    // Add debug logging
+    // console.log("imagekit instance:", imagekit);
+    // console.log("imagekit.upload type:", typeof imagekit.upload);
     const { userId } = getAuth(request);
     const storeId = await authSeller(userId);
 
@@ -13,13 +17,13 @@ export async function POST(request) {
       return NextResponse.json({ error: "not authorized" }, { status: 400 });
     }
 
-    const formdata = await request.formdata();
+    const formdata = await request.formData();
     const name = formdata.get("name");
     const description = formdata.get("description");
     const mrp = Number(formdata.get("mrp"));
     const price = Number(formdata.get("price"));
     const category = formdata.get("category");
-    const images = formdata.get("images");
+    const images = formdata.getAll("images");
 
     if (
       !name ||
@@ -27,7 +31,7 @@ export async function POST(request) {
       !mrp ||
       !price ||
       !category ||
-      !images.length < 1
+      images.length < 1
     ) {
       return NextResponse.json(
         { error: "missing product details" },
@@ -38,21 +42,15 @@ export async function POST(request) {
     const imagesUrl = await Promise.all(
       images.map(async (image) => {
         const buffer = Buffer.from(await image.arrayBuffer());
-        const response = await imagekit.upload({
-          file: buffer,
-          filename: image.name,
+        const base64 = buffer.toString("base64");
+        
+        const response = await imagekit.files.upload({
+          file: base64,
+          fileName: image.name,
           folder: "products",
         });
 
-        const url = await imagekit.url({
-          path: response.filePath,
-          transformation: [
-            { quality: "auto" },
-            { format: "webp" },
-            { width: 1024 },
-          ],
-        });
-        return url;
+        return response.url;
       })
     );
 
@@ -81,7 +79,7 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const { userId } = getAuth(request);
-    const storeId = authSeller(userId);
+    const storeId = await authSeller(userId);
 
     if (!storeId) {
       return NextResponse.json({ error: "not authorized" }, { status: 401 });
