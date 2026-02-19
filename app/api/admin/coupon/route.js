@@ -14,21 +14,53 @@ export async function POST(request) {
     }
 
     const { coupon } = await request.json();
-    coupon.code = coupon.code.toUpperCase();
 
-    await prisma.coupon.create({
-      data: coupon ,
-    }).then(async (coupon)=> {
+    if (!coupon || typeof coupon.code !== "string" || !coupon.code.trim()) {
+      return NextResponse.json({ error: "Coupon code is required" }, { status: 400 });
+    }
+
+    // normalize and validate input fields
+    const normalizedCoupon = {
+      ...coupon,
+      code: coupon.code.toUpperCase(),
+      discount: Number(coupon.discount),
+      forMember: !!coupon.forMember,
+      forNewUser: !!coupon.forNewUser,
+      isPublic: !!coupon.isPublic,
+    };
+
+    if (Number.isNaN(normalizedCoupon.discount)) {
+      return NextResponse.json({ error: "Coupon discount must be a number" }, { status: 400 });
+    }
+
+    const expiresAtDate = new Date(normalizedCoupon.expiresAt);
+    if (!normalizedCoupon.expiresAt || isNaN(expiresAtDate.getTime())) {
+      return NextResponse.json({ error: "Valid expiresAt is required" }, { status: 400 });
+    }
+
+    let created;
+    try {
+      created = await prisma.coupon.create({ data: normalizedCoupon });
+    } catch (err) {
+      // Prisma unique constraint error (code P2002)
+      if (err?.code === "P2002") {
+        return NextResponse.json({ error: "Coupon code already exists" }, { status: 409 });
+      }
+      throw err;
+    }
+
+    // schedule deletion only if expiry is a valid future date
+    if (expiresAtDate > new Date()) {
       await inngest.send({
         name: "app/coupon.expired",
         data: {
-          code: coupon.code,
-          expires_at: coupon.expiresAt,
-        }
-      })
-    });
+          code: created.code,
+          expires_at: created.expiresAt,
+        },
+      });
+    }
 
-    return NextResponse.json({ message: "coupon added successfully" });
+    return NextResponse.json({ message: "coupon added successfully", coupon: created }, { status: 201 });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
@@ -50,9 +82,19 @@ export async function DELETE(request) {
     const { searchParams } = request.nextUrl;
     const code = searchParams.get("code");
 
-    await prisma.coupon.delete({
-      where: { code },
-    });
+    if (!code) {
+      return NextResponse.json({ error: "Coupon code is required" }, { status: 400 });
+    }
+
+    try {
+      await prisma.coupon.delete({ where: { code } });
+    } catch (err) {
+      // Prisma 'Record to delete does not exist' error
+      if (err?.code === "P2025") {
+        return NextResponse.json({ error: "Coupon not found" }, { status: 404 });
+      }
+      throw err;
+    }
 
     return NextResponse.json({ message: "coupon deleted successfully" });
   } catch (error) {
