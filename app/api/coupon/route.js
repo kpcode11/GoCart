@@ -4,12 +4,18 @@ import { NextResponse } from "next/server";
 
 export async function POST(request) {
   try {
-    const { userId } = getAuth(request);
+    const { userId, has } = getAuth(request);
     const { code } = await request.json();
+
+    if (!code || typeof code !== "string") {
+      return NextResponse.json({ error: "Coupon code is required" }, { status: 400 });
+    }
+
+    const normalized = code.toUpperCase();
 
     const coupon = await prisma.coupon.findFirst({
       where: {
-        code: code.toUpperCase(),
+        code: normalized,
         expiresAt: {
           gt: new Date(),
         },
@@ -39,29 +45,32 @@ export async function POST(request) {
         );
       }
 
-      // Server-side membership check via Clerk
-      try {
-        const client = await clerkClient();
-        const user = await client.users.getUser(userId);
-        const publicMeta = user?.publicMetadata ?? {};
-        const privateMeta = user?.privateMetadata ?? {};
+      // Prefer session claim check (fast & reliable); fallback to Clerk user metadata.
+      const isPlusFromSession = typeof has === "function" && has({ plan: "plus" });
+      if (!isPlusFromSession) {
+        try {
+          const client = await clerkClient();
+          const user = await client.users.getUser(userId);
+          const publicMeta = user?.publicMetadata ?? {};
+          const privateMeta = user?.privateMetadata ?? {};
 
-        const isPlusMember =
-          publicMeta?.plan === "plus" ||
-          publicMeta?.isPlus === true ||
-          privateMeta?.plan === "plus" ||
-          (Array.isArray(publicMeta?.subscriptions) && publicMeta.subscriptions.includes("plus")) ||
-          (Array.isArray(privateMeta?.subscriptions) && privateMeta.subscriptions.includes("plus"));
+          const isPlusFromMeta =
+            publicMeta?.plan === "plus" ||
+            publicMeta?.isPlus === true ||
+            privateMeta?.plan === "plus" ||
+            (Array.isArray(publicMeta?.subscriptions) && publicMeta.subscriptions.includes("plus")) ||
+            (Array.isArray(privateMeta?.subscriptions) && privateMeta.subscriptions.includes("plus"));
 
-        if (!isPlusMember) {
-          return NextResponse.json(
-            { error: "Coupon valid for members only" },
-            { status: 401 },
-          );
+          if (!isPlusFromMeta) {
+            return NextResponse.json(
+              { error: "Coupon valid for members only" },
+              { status: 401 },
+            );
+          }
+        } catch (err) {
+          console.error("Failed to verify membership:", err);
+          return NextResponse.json({ error: "Failed to verify membership" }, { status: 500 });
         }
-      } catch (err) {
-        console.error("Failed to verify membership:", err);
-        return NextResponse.json({ error: "Failed to verify membership" }, { status: 500 });
       }
     }
 

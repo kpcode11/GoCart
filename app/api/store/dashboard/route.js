@@ -26,12 +26,12 @@ export async function GET(request) {
       include: { user: true, product: true },
     });
 
+    const totalEarningsValue = orders.reduce((acc, order) => acc + (order.total ?? 0), 0);
+
     const dashboardData = {
       ratings,
       totalOrders: orders.length,
-      totalEarnings: Math.round(
-        orders.reduce((acc, order) => acc + order.length, 0),
-      ),
+      totalEarnings: Math.round(totalEarningsValue * 100) / 100,
       totalProducts: products.length,
     };
 
