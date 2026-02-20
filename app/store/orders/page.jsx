@@ -125,7 +125,7 @@ export default function StoreOrders() {
             {/* Modal */}
             {isModalOpen && selectedOrder && (
                 <div onClick={closeModal} className="fixed inset-0 flex items-center justify-center bg-black/50 text-slate-700 text-sm backdrop-blur-xs z-50" >
-                    <div onClick={e => e.stopPropagation()} className="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 relative">
+                    <div onClick={e => e.stopPropagation()} className="bg-white rounded-lg shadow-lg max-w-2xl w-full mx-4 p-4 sm:p-6 relative max-h-[90vh] overflow-y-auto">
                         <h2 className="text-xl font-semibold text-slate-900 mb-4 text-center">
                             Order Details
                         </h2>
