@@ -55,7 +55,8 @@ export default function Cart() {
 
                 <div className="flex items-start justify-between gap-5 max-lg:flex-col">
 
-                    <table className="w-full max-w-4xl text-slate-600 table-auto">
+                    <div className="overflow-x-auto w-full max-w-4xl">
+                    <table className="w-full text-slate-600 table-auto">
                         <thead>
                             <tr className="max-sm:text-sm">
                                 <th className="text-left">Product</th>
@@ -92,6 +93,7 @@ export default function Cart() {
                             }
                         </tbody>
                     </table>
+                    </div>
                     <OrderSummary totalPrice={totalPrice} items={cartArray} />
                 </div>
             </div>

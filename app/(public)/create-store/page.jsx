@@ -105,7 +105,7 @@ export default function CreateStore() {
         return (
             <div className="min-h-[80vh] mx-6 flex items-center justify-center
             text-slate-400">
-            <h1 className="text-2x1 sm: text-4x1 font-semibold">Please <span
+            <h1 className="text-2xl sm:text-4xl font-semibold">Please <span
             className="text-slate-500">Login</span> to continue</h1>
             </div>
         )

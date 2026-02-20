@@ -1,8 +1,8 @@
 "use client";
-import { PackageIcon, Search, ShoppingCart } from "lucide-react";
+import { LayoutDashboard, PackageIcon, Search, ShoppingCart, Store } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useUser, useClerk, UserButton, Protect} from "@clerk/nextjs";
 
@@ -13,6 +13,25 @@ const Navbar = () => {
   const router = useRouter();
 
   const [search, setSearch] = useState("");
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isSeller, setIsSeller] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      setIsAdmin(false);
+      setIsSeller(false);
+      return;
+    }
+    fetch("/api/admin/is-admin")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => setIsAdmin(!!data?.isAdmin))
+      .catch(() => setIsAdmin(false));
+
+    fetch("/api/store/is-seller")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => setIsSeller(!!data?.isSeller))
+      .catch(() => setIsSeller(false));
+  }, [user]);
   const cartCount = useSelector((state) => state.cart.total);
 
   const handleSearch = (e) => {
@@ -83,10 +102,22 @@ const Navbar = () => {
                   <UserButton.Action
                     labelIcon={<PackageIcon size={16}/>}
                     label="My Orders"
-                    onClick={() => {
-                      router.push("/orders");
-                    }}
+                    onClick={() => router.push("/orders")}
                   />
+                  {isSeller && (
+                    <UserButton.Action
+                      labelIcon={<Store size={16}/>}
+                      label="Store Dashboard"
+                      onClick={() => router.push("/store")}
+                    />
+                  )}
+                  {isAdmin && (
+                    <UserButton.Action
+                      labelIcon={<LayoutDashboard size={16}/>}
+                      label="Admin Panel"
+                      onClick={() => router.push("/admin")}
+                    />
+                  )}
                 </UserButton.MenuItems>
               </UserButton>
             )}
@@ -103,21 +134,27 @@ const Navbar = () => {
                       <UserButton.Action
                         labelIcon={<ShoppingCart size={16}/>}
                         label="Cart"
-                        onClick={() => {
-                          router.push("/cart");
-                        }}
+                        onClick={() => router.push("/cart")}
                       />
-                    </UserButton.MenuItems>
-                  </UserButton>
-                  <UserButton>
-                    <UserButton.MenuItems>
                       <UserButton.Action
                         labelIcon={<PackageIcon size={16}/>}
                         label="My Orders"
-                        onClick={() => {
-                          router.push("/orders");
-                        }}
+                        onClick={() => router.push("/orders")}
                       />
+                      {isSeller && (
+                        <UserButton.Action
+                          labelIcon={<Store size={16}/>}
+                          label="Store Dashboard"
+                          onClick={() => router.push("/store")}
+                        />
+                      )}
+                      {isAdmin && (
+                        <UserButton.Action
+                          labelIcon={<LayoutDashboard size={16}/>}
+                          label="Admin Panel"
+                          onClick={() => router.push("/admin")}
+                        />
+                      )}
                     </UserButton.MenuItems>
                   </UserButton>
                 </div>
