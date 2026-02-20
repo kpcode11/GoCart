@@ -131,8 +131,12 @@ export async function POST(request) {
     }
 
     if (paymentMethod === "STRIPE") {
-      // initialize Stripe with secret key and API version
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      // choose the appropriate key based on environment; in development use a dedicated test key
+      const stripeKey =
+        process.env.NODE_ENV === "production"
+          ? process.env.STRIPE_SECRET_KEY
+          : process.env.STRIPE_TEST_SECRET_KEY || process.env.STRIPE_SECRET_KEY;
+      const stripe = new Stripe(stripeKey, {
         apiVersion: "2022-11-15",
       });
       // headers.get is synchronous; default to origin header or env URL

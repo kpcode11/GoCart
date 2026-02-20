@@ -4,9 +4,13 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 // initialize Stripe with explicit API version to avoid warnings
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2022-11-15",
-});
+// use test key in non-production environments if provided
+const stripe = new Stripe(
+  process.env.NODE_ENV === "production"
+    ? process.env.STRIPE_SECRET_KEY
+    : process.env.STRIPE_TEST_SECRET_KEY || process.env.STRIPE_SECRET_KEY,
+  { apiVersion: "2022-11-15" },
+);
 
 export async function POST(request) {
   try {
