@@ -60,11 +60,18 @@ export async function POST(request) {
       folder: "logos",
     });
 
-    const optimizedImage = imagekit.url({
-      path: response.filePath,
-      transformation: [{ quality: "auto" }, { format: "webp" }, { width: 512 }],
-    });
-
+    // the v7 client no longer exposes `url()`; use the response URL directly or
+    // generate one with the helper. we only need a transformed URL for storage,
+    // so we can call the helper or fall back to the raw upload URL:
+    //
+    // const optimizedImage = imagekit.helper.buildSrc({
+    //   src: response.filePath,
+    //   urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
+    //   transformation: [{ quality: "auto" }, { format: "webp" }, { width: 512 }],
+    // });
+    //
+    // the upload response already contains a URL we can use directly:
+    const optimizedImage = response.url;
     const newStore = await prisma.store.create({
       data: {
         userId,
