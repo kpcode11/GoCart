@@ -27,7 +27,7 @@ export async function POST(request) {
     ) {
       return NextResponse.json(
         { error: "missing store info" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -46,14 +46,15 @@ export async function POST(request) {
     if (isUsernameTaken) {
       return NextResponse.json(
         { error: "Username already taken" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const buffer = Buffer.from(await image.arrayBuffer());
+    const base64 = buffer.toString("base64");
 
     const response = await imagekit.upload({
-      file: buffer,
+      file: base64,
       fileName: image.name,
       folder: "logos",
     });
@@ -86,13 +87,13 @@ export async function POST(request) {
 
     return NextResponse.json(
       { message: "applied, waiting for approval" },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error(error);
     return NextResponse.json(
       { error: error.code || error.message },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }
@@ -113,7 +114,7 @@ export async function GET(request) {
     console.error(error);
     return NextResponse.json(
       { error: error.code || error.message },
-      { status: 400 }
+      { status: 400 },
     );
   }
 }
