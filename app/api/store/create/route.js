@@ -53,7 +53,8 @@ export async function POST(request) {
     const buffer = Buffer.from(await image.arrayBuffer());
     const base64 = buffer.toString("base64");
 
-    const response = await imagekit.upload({
+    // use the modern SDK API under `files` namespace
+    const response = await imagekit.files.upload({
       file: base64,
       fileName: image.name,
       folder: "logos",
