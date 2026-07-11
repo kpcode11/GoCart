@@ -12,23 +12,20 @@ export async function GET(request) {
       return NextResponse.json({ error: "not authorized" }, { status: 401 });
     }
 
-    // total orders
-    const orders = await prisma.order.count();
-    // total stores
-    const stores = await prisma.store.count();
-    const allOrders = await prisma.order.findMany({
-      select: { createdAt: true, total: true },
-    });
+    // Run queries concurrently
+    const [orders, stores, products, allOrders, revenueAgg] = await Promise.all([
+      prisma.order.count(),
+      prisma.store.count(),
+      prisma.product.count(),
+      prisma.order.findMany({
+        select: { createdAt: true, total: true },
+      }),
+      prisma.order.aggregate({
+        _sum: { total: true },
+      })
+    ]);
 
-    let totalRevenue = 0;
-    allOrders.forEach((order) => {
-      totalRevenue += order.total;
-    });
-
-    const revenue = totalRevenue.toFixed(2);
-
-    // total products
-    const products = await prisma.product.count();
+    const revenue = (revenueAgg._sum.total ?? 0).toFixed(2);
 
     const dashboardData = {
       orders,

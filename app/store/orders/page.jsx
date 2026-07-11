@@ -149,6 +149,7 @@ export default function StoreOrders() {
                                             src={item.product.images?.[0].src || item.product.images?.[0]}
                                             alt={item.product?.name}
                                             className="w-16 h-16 object-cover rounded"
+                                            loading="lazy"
                                         />
                                         <div className="flex-1">
                                             <p className="text-slate-800">{item.product?.name}</p>

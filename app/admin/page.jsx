@@ -1,7 +1,8 @@
 'use client'
 import { dummyAdminDashboardData } from "@/assets/assets"
 import Loading from "@/components/Loading"
-import OrdersAreaChart from "@/components/OrdersAreaChart"
+import dynamic from 'next/dynamic'
+const OrdersAreaChart = dynamic(() => import('@/components/OrdersAreaChart'), { ssr: false })
 import { useAuth } from "@clerk/nextjs"
 import axios from "axios"
 import { CircleDollarSignIcon, ShoppingBasketIcon, StoreIcon, TagsIcon } from "lucide-react"
