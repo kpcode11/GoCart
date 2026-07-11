@@ -13,26 +13,28 @@ export async function GET(request) {
       return NextResponse.json({ message: "not authorized" }, { status: 401 });
     }
 
-    const orders = await prisma.order.findMany({
-      where: { storeId },
-    });
+    const [ordersAgg, totalProducts, ratings] = await Promise.all([
+      prisma.order.aggregate({
+        where: { storeId },
+        _count: true,
+        _sum: { total: true },
+      }),
+      prisma.product.count({
+        where: { storeId },
+      }),
+      prisma.rating.findMany({
+        where: { product: { storeId } },
+        include: { user: true, product: true },
+      })
+    ]);
 
-    const products = await prisma.product.findMany({
-      where: { storeId },
-    });
-
-    const ratings = await prisma.rating.findMany({
-      where: { productId: { in: products.map((product) => product.id) } },
-      include: { user: true, product: true },
-    });
-
-    const totalEarningsValue = orders.reduce((acc, order) => acc + (order.total ?? 0), 0);
+    const totalEarningsValue = ordersAgg._sum.total ?? 0;
 
     const dashboardData = {
       ratings,
-      totalOrders: orders.length,
+      totalOrders: ordersAgg._count,
       totalEarnings: Math.round(totalEarningsValue * 100) / 100,
-      totalProducts: products.length,
+      totalProducts,
     };
 
     return NextResponse.json({ dashboardData });

@@ -34,5 +34,8 @@
     "@types/ws": "^8.18.1",
     "prisma": "^6.0.0",
     "tailwindcss": "^4"
+  },
+  "prisma": {
+    "seed": "npx -y tsx prisma/seed.ts"
   }
 }

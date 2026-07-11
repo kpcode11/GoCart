@@ -6,6 +6,9 @@ export async function GET(request) {
     let products = await prisma.product.findMany({
       where: {
         inStock: true,
+        store: {
+          isActive: true
+        }
       },
       include: {
         rating: {
@@ -28,8 +31,6 @@ export async function GET(request) {
       },
     });
 
-    // remove products with store isActive false
-    products = products.filter((product) => product.store.isActive);
     return NextResponse.json({ products });
   } catch (error) {
     console.error(error);
