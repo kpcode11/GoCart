@@ -4,8 +4,7 @@ import prisma from "@/lib/prisma";
 // Save user data into database using inngest
 
 export const syncUserCreation = inngest.createFunction(
-  { id: "sync-user-create" },
-  { event: "clerk/user.created" },
+  { id: "sync-user-create", event: "clerk/user.created" },
 
   async ({ event }) => {
     const { data } = event;
@@ -21,8 +20,7 @@ export const syncUserCreation = inngest.createFunction(
 );
 
 export const syncUserUpdation = inngest.createFunction(
-  { id: "sync-user-update" },
-  { event: "clerk/user.updated" },
+  { id: "sync-user-update", event: "clerk/user.updated" },
 
   async ({ event }) => {
     const { data } = event;
@@ -38,8 +36,7 @@ export const syncUserUpdation = inngest.createFunction(
 );
 
 export const syncUserDeletion = inngest.createFunction(
-  { id: "sync-user-delete" },
-  { event: "clerk/user.deleted" },
+  { id: "sync-user-delete", event: "clerk/user.deleted" },
 
   async ({ event }) => {
     const { data } = event;
@@ -51,8 +48,7 @@ export const syncUserDeletion = inngest.createFunction(
 );
 
 export const deleteCouponOnExpiry = inngest.createFunction(
-  { id: "delete-coupon-on-expiry" },
-  { event: "app/coupon.expired" },
+  { id: "delete-coupon-on-expiry", event: "app/coupon.expired" },
   async ({ event, step }) => {
     const { data } = event;
     const expiryDate = new Date(data.expires_at);
