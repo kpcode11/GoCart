@@ -183,3 +183,25 @@ Access to `/store` and `/admin` routes is protected by server-side middleware (`
 ## License
 
 This project is private and not licensed for public distribution.
+
+---
+
+## Docker Setup (DevOps Level 1)
+
+This project has been containerized using a multi-stage Dockerfile for optimized production deployments.
+
+### Prerequisites
+Ensure Docker and Docker Compose are installed on your machine.
+Ensure you have a `.env` file populated with the necessary environment variables (Clerk, Neon Database, etc.).
+
+### Build and Run with Docker CLI
+```bash
+docker build -t gocart:1.0 .
+docker run --env-file .env -p 3000:3000 gocart:1.0
+```
+
+### Run with Docker Compose
+```bash
+docker compose up --build
+```
+The application will be accessible at `http://localhost:3000`.
