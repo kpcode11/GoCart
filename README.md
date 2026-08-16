@@ -205,3 +205,38 @@ docker run --env-file .env -p 3000:3000 gocart:1.0
 docker compose up --build
 ```
 The application will be accessible at `http://localhost:3000`.
+
+---
+
+## Jenkins CI (DevOps Level 2)
+
+This project includes a declarative `Jenkinsfile` for Continuous Integration on every GitHub push.
+
+### Pipeline Stages
+1. **Checkout**: Pulls the latest code from GitHub.
+2. **Install Dependencies**: Runs `npm ci`.
+3. **Lint**: Validates code with `npm run lint`.
+4. **Prisma Generate**: Generates the Prisma client.
+5. **Next.js Production Build**: Ensures the application builds successfully. Requires the `.env` file injected securely to prerender pages without failing.
+6. **Docker Image Build**: Re-builds the containerized application to verify the Level 1 container setup.
+
+### Jenkins Configuration Requirements
+
+1. **Plugins**:
+   - NodeJS Plugin (Configured with an installation named `node20`).
+   - Credentials Binding Plugin (For `.env` injection).
+   - Docker Pipeline / Docker build capabilities.
+   - Workspace Cleanup Plugin.
+
+2. **Credentials**:
+   - Create a **Secret file** credential in Jenkins.
+   - Upload your production `.env` file.
+   - Set the ID to `gocart-env`. The pipeline uses this to securely inject public build-time variables without committing secrets to the repo.
+
+3. **GitHub Webhook**:
+   - In your GitHub repository settings, go to **Webhooks**.
+   - Add a webhook pointing to `http://<YOUR_JENKINS_URL>/github-webhook/`.
+   - Select the `push` event.
+   - Ensure your Jenkins Multibranch Pipeline (or standard pipeline) is configured to trigger on "GitHub hook trigger for GITScm polling".
+
+**Note**: The current setup performs CI and verification only. The live application continues to be deployed and hosted on Vercel.
